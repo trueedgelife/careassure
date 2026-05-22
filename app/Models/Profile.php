@@ -54,4 +54,9 @@ class Profile extends Model
         );
     }
 
+    public function carer(): HasOne
+    {
+        return $this->hasOne(Carer::class);
+    }
+
 }

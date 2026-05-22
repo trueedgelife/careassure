@@ -2,29 +2,32 @@
 
 namespace App\Models;
 
-use App\Enums\ServiceUserStatus;
+use App\Enums\EmploymentType;
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 #[Fillable([
-    'tenant_id', 'profile_id', 'nhs_number', 'council_reference',
-    'funding_start_date', 'status', 'is_active',
+    'tenant_id', 'profile_id', 'employment_type',
+    'start_date', 'end_date', 'is_primary_carer', 'is_active',
 ])]
-class ServiceUser extends Model
+class Carer extends Model
 {
     use HasFactory, BelongsToTenant, LogsActivity;
 
     protected function casts(): array
     {
         return [
-            'status' => ServiceUserStatus::class,
-            'funding_start_date' => 'date',
+            'employment_type' => EmploymentType::class,
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'is_primary_carer' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
@@ -39,24 +42,19 @@ class ServiceUser extends Model
         return $this->belongsTo(Profile::class);
     }
 
-    public function relationships(): HasMany
+    public function rates(): HasMany
     {
-        return $this->hasMany(PersonRelationship::class);
+        return $this->hasMany(CarerRate::class);
     }
 
-    public function capacityAssessments(): HasMany
+    public function compliance(): HasOne
     {
-        return $this->hasMany(CapacityAssessment::class);
+        return $this->hasOne(CarerCompliance::class);
     }
 
-    public function carePackages(): HasMany
+    public function shifts(): HasMany
     {
-        return $this->hasMany(CarePackage::class);
-    }
-
-    public function incidents(): HasMany
-    {
-        return $this->hasMany(Incident::class);
+        return $this->hasMany(Shift::class);
     }
 
 }

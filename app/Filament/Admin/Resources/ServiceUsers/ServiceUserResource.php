@@ -10,6 +10,7 @@ use App\Filament\Admin\Resources\ServiceUsers\Pages\ViewServiceUser;
 use App\Filament\Admin\Resources\ServiceUsers\Schemas\ServiceUserForm;
 use App\Filament\Admin\Resources\ServiceUsers\Schemas\ServiceUserInfolist;
 use App\Filament\Admin\Resources\ServiceUsers\Tables\ServiceUsersTable;
+use App\Filament\Admin\Resources\ServiceUsers\RelationManagers;
 use App\Models\ServiceUser;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -57,7 +58,8 @@ class ServiceUserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\RelationshipsRelationManager::class,
+            RelationManagers\CapacityAssessmentsRelationManager::class,
         ];
     }
 
