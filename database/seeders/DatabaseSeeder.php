@@ -14,6 +14,12 @@ use App\Enums\FunderType;
 use App\Enums\IncidentSeverity;
 use App\Enums\IncidentStatus;
 use App\Enums\ShiftStatus;
+use App\Enums\ExpenseCategory;
+use App\Enums\TransactionDirection;
+use App\Enums\TransactionSource;
+use App\Models\DpAccount;
+use App\Models\DpTransaction;
+use App\Models\Expense;
 use App\Models\CarePackage;
 use App\Models\CarePackageReview;
 use App\Models\FundingSource;
@@ -314,6 +320,50 @@ class DatabaseSeeder extends Seeder
                 'incident_type' => 'Fall',
                 'description' => 'Margaret had a minor fall in the kitchen; no injury, GP informed as a precaution.',
                 'status' => IncidentStatus::Resolved,
+            ]
+        );
+
+        // ---- Direct payment account for Margaret's package ----
+        $dpAccount = DpAccount::firstOrCreate(
+            ['care_package_id' => $carePackage->id],
+            [
+                'tenant_id' => $demoTenant->id,
+                'opening_balance' => 0,
+                'opened_on' => '2024-09-01',
+                'bank_account_ref' => '****4821',
+            ]
+        );
+
+        // Council pays a quarter's funding in (credit)
+        DpTransaction::firstOrCreate(
+            [
+                'dp_account_id' => $dpAccount->id,
+                'source_type' => TransactionSource::CouncilPayment->value,
+                'transaction_date' => '2024-09-01',
+            ],
+            [
+                'tenant_id' => $demoTenant->id,
+                'direction' => TransactionDirection::Credit,
+                'amount' => 3685.50,
+                'bank_reference' => 'BACS-CCC-Q1',
+                'notes' => 'Q1 direct payment from Cardiff Council (13 weeks).',
+                'created_by' => $admin->id,
+            ]
+        );
+
+        // A payroll-service expense — the observer auto-posts a matching debit
+        Expense::firstOrCreate(
+            [
+                'care_package_id' => $carePackage->id,
+                'category' => ExpenseCategory::PayrollService->value,
+                'expense_date' => '2024-09-15',
+            ],
+            [
+                'tenant_id' => $demoTenant->id,
+                'amount' => 45.00,
+                'supplier_name' => 'PayPacket Ltd',
+                'notes' => 'Monthly payroll administration.',
+                'created_by' => $admin->id,
             ]
         );
 

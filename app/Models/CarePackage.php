@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'tenant_id', 'service_user_id', 'weekly_funded_hours', 'annual_budget',
@@ -54,5 +55,15 @@ class CarePackage extends Model
     public function reviews(): HasMany
     {
         return $this->hasMany(CarePackageReview::class);
+    }
+
+    public function dpAccount(): HasOne
+    {
+        return $this->hasOne(DpAccount::class);
+    }
+
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
     }
 }
