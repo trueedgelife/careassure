@@ -61,6 +61,7 @@ class CarePackageResource extends Resource
             RelationManagers\FundingSourcesRelationManager::class,
             RelationManagers\ShiftsRelationManager::class,
             RelationManagers\ReviewsRelationManager::class,
+            RelationManagers\ExpensesRelationManager::class,
         ];
     }
 
