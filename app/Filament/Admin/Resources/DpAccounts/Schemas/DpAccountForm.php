@@ -16,7 +16,11 @@ class DpAccountForm
             ->components([
                 Select::make('care_package_id')
                     ->label('Care package')
-                    ->relationship('carePackage', 'id')
+                    ->relationship(
+                        'carePackage',
+                        'id',
+                        modifyQueryUsing: fn ($query) => $query->whereDoesntHave('dpAccount'),
+                    )
                     ->getOptionLabelFromRecordUsing(
                         fn (CarePackage $record) => $record->serviceUser?->profile?->full_name
                             ? $record->serviceUser->profile->full_name . " (package #{$record->id})"
