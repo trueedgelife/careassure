@@ -1,0 +1,1 @@
+n composer.json you'll now have "filament/filament": "5.5.2". Jot somewhere — README, a TODO, project notes: Filament pinned to 5.5.2. 5.6.x has a compileOpeningTags render regression on resource pages under Laravel 13 / PHP 8.4. Unpin and retest when a 5.6.x fix ships. This stops a future composer update silently dragging you back onto the broken version.y
