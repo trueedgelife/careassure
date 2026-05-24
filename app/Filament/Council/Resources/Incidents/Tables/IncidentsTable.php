@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Resources\CarePackages\Tables;
+namespace App\Filament\Council\Resources\Incidents\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -9,39 +9,38 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class CarePackagesTable
+class IncidentsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with('serviceUser.profile'))
             ->columns([
-                TextColumn::make('serviceUser.profile.full_name')
-                    ->label('Service user')
-                    ->searchable(['first_name', 'last_name'])
+                TextColumn::make('tenant.name')
+                    ->searchable(),
+                TextColumn::make('serviceUser.id')
+                    ->searchable(),
+                TextColumn::make('reported_by')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('severity')
+                    ->badge()
+                    ->searchable(),
+                TextColumn::make('incident_type')
+                    ->searchable(),
+                TextColumn::make('occurred_at')
+                    ->dateTime()
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
+                    ->searchable(),
+                TextColumn::make('safeguarding_referred_at')
+                    ->dateTime()
                     ->sortable(),
-                TextColumn::make('delivery_model')
-                    ->label('Delivery')
-                    ->badge()
-                    ->sortable(),
-                TextColumn::make('weekly_funded_hours')
-                    ->label('Weekly hrs')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('annual_budget')
-                    ->money('GBP')
-                    ->sortable(),
-                TextColumn::make('start_date')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('end_date')
-                    ->date()
-                    ->sortable()
-                    ->placeholder('—'),
                 TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

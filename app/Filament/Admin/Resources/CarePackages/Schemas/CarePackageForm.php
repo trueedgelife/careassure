@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\CarePackages\Schemas;
 
 use App\Enums\CarePackageStatus;
+use App\Enums\DeliveryModel;
 use App\Models\ServiceUser;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -24,6 +25,12 @@ class CarePackageForm
                     ->searchable()
                     ->preload()
                     ->required(),
+                Select::make('delivery_model')
+                    ->label('Delivery model')
+                    ->options(DeliveryModel::class)
+                    ->default(DeliveryModel::DirectPayment)
+                    ->required()
+                    ->helperText('Direct Payment & Mixed have a family-controlled DP account; Council-Managed does not.'),
                 TextInput::make('weekly_funded_hours')
                     ->label('Weekly funded hours')
                     ->numeric()

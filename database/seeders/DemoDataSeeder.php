@@ -13,6 +13,7 @@ use App\Enums\ServiceUserStatus;
 use App\Enums\ShiftStatus;
 use App\Enums\TransactionDirection;
 use App\Enums\TransactionSource;
+use App\Enums\DeliveryModel;
 use App\Models\CarePackage;
 use App\Models\Carer;
 use App\Models\CarerCompliance;
@@ -383,6 +384,17 @@ class DemoDataSeeder extends Seeder
         $this->makePackage($tenant, $serviceUser, $n, $style, $carers);
     }
 
+    /**
+     * REPLACEMENT for the existing makePackage() method in DemoDataSeeder.php.
+     *
+     * Also add this import near the top of the file with the other use lines:
+     *     use App\Enums\DeliveryModel;
+     *
+     * Key change: each package now gets a delivery_model, and the DP account
+     * is created ONLY when that model has one (direct_payment or mixed —
+     * never council_managed). This replaces the old arbitrary "66% of
+     * packages get an account" rule with a model-driven, correct one.
+     */
     protected function makePackage(Tenant $tenant, ServiceUser $serviceUser, int $n, string $style, array $carers): void
     {
         $packageStatus = match ($serviceUser->status) {
@@ -390,9 +402,20 @@ class DemoDataSeeder extends Seeder
             default => CarePackageStatus::Active,
         };
 
+        // Delivery model — weighted toward direct payment, with some mixed
+        // and some council-managed (the latter get NO family DP account).
+        $deliveryModel = fake()->randomElement([
+            DeliveryModel::DirectPayment,
+            DeliveryModel::DirectPayment,
+            DeliveryModel::DirectPayment,
+            DeliveryModel::Mixed,
+            DeliveryModel::CouncilManaged,
+        ]);
+
         $package = CarePackage::create([
             'tenant_id' => $tenant->id,
             'service_user_id' => $serviceUser->id,
+            'delivery_model' => $deliveryModel,
             'weekly_funded_hours' => fake()->boolean(85) ? fake()->randomElement([14, 21, 28, 35]) : null,
             'annual_budget' => fake()->boolean(80) ? fake()->randomElement([12000, 14742, 18500, 22000]) : null,
             'review_frequency_days' => 365,
@@ -450,8 +473,9 @@ class DemoDataSeeder extends Seeder
             }
         }
 
-        // DP account — PARTIAL: ~1 in 3 active packages have NO account.
-        if ($packageStatus === CarePackageStatus::Active && fake()->boolean(66)) {
+        // DP account — ONLY for delivery models that have one (not council-managed).
+        // This is the rule the family portal keys off: no account => no "My Account".
+        if ($packageStatus === CarePackageStatus::Active && $deliveryModel->hasDpAccount()) {
             $account = DpAccount::create([
                 'tenant_id' => $tenant->id,
                 'care_package_id' => $package->id,
@@ -460,7 +484,7 @@ class DemoDataSeeder extends Seeder
                 'bank_account_ref' => '****' . fake()->numerify('####'),
             ]);
 
-            // A council credit, sometimes a second.
+            // A council credit into the family-controlled account.
             DpTransaction::create([
                 'tenant_id' => $tenant->id,
                 'dp_account_id' => $account->id,
@@ -482,7 +506,6 @@ class DemoDataSeeder extends Seeder
                 'description' => fake()->sentence(12),
                 'occurred_at' => fake()->dateTimeBetween('-2 months', 'now'),
                 'status' => fake()->randomElement(IncidentStatus::cases()),
-                // PARTIAL: most have no safeguarding referral (null).
                 'safeguarding_referred_at' => fake()->boolean(20) ? fake()->dateTimeBetween('-1 month', 'now') : null,
             ]);
         }

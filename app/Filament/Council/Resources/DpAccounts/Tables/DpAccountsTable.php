@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Resources\CarePackages\Tables;
+namespace App\Filament\Council\Resources\DpAccounts\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -9,39 +9,32 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class CarePackagesTable
+class DpAccountsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with('serviceUser.profile'))
             ->columns([
-                TextColumn::make('serviceUser.profile.full_name')
-                    ->label('Service user')
-                    ->searchable(['first_name', 'last_name'])
-                    ->sortable(),
-                TextColumn::make('status')
-                    ->badge()
-                    ->sortable(),
-                TextColumn::make('delivery_model')
-                    ->label('Delivery')
-                    ->badge()
-                    ->sortable(),
-                TextColumn::make('weekly_funded_hours')
-                    ->label('Weekly hrs')
+                TextColumn::make('tenant.name')
+                    ->searchable(),
+                TextColumn::make('carePackage.id')
+                    ->searchable(),
+                TextColumn::make('opening_balance')
                     ->numeric()
                     ->sortable(),
-                TextColumn::make('annual_budget')
-                    ->money('GBP')
-                    ->sortable(),
-                TextColumn::make('start_date')
+                TextColumn::make('opened_on')
                     ->date()
                     ->sortable(),
-                TextColumn::make('end_date')
+                TextColumn::make('closed_on')
                     ->date()
-                    ->sortable()
-                    ->placeholder('—'),
+                    ->sortable(),
+                TextColumn::make('bank_account_ref')
+                    ->searchable(),
                 TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

@@ -77,4 +77,47 @@ class User extends Authenticatable implements FilamentUser
 
         return $this->hasAnyRole($allowedRoles);
     }
+
+    // The carer record for this user, if they are one (via their profile).
+    public function carer(): ?\App\Models\Carer
+    {
+        return $this->profile?->carer;
+    }
+
+    // The service-user record for this user, if they are one.
+    public function serviceUserRecord(): ?\App\Models\ServiceUser
+    {
+        return $this->profile?->serviceUser;
+    }
+
+    /**
+     * IDs of all service users this user may access in the portal:
+     *  - their own service-user record (if they are one), AND
+     *  - any service users they are a delegate/contact for (via relationships).
+     *
+     * Handles plain service users, delegates (incl. for multiple people),
+     * and multi-hat users who are both. Returns a unique list of IDs.
+     */
+    public function accessibleServiceUserIds(): array
+    {
+        $profile = $this->profile;
+
+        if (! $profile) {
+            return [];
+        }
+
+        $ids = [];
+
+        // (a) Their own service-user record.
+        if ($profile->serviceUser) {
+            $ids[] = $profile->serviceUser->id;
+        }
+
+        // (b) Service users they are a delegate/contact for.
+        $delegatedIds = $profile->relationshipsAsContact()
+            ->pluck('service_user_id')
+            ->all();
+
+        return array_values(array_unique(array_merge($ids, $delegatedIds)));
+    }
 }

@@ -29,6 +29,7 @@ class CarePackage extends Model
             'annual_budget' => 'decimal:2',
             'start_date' => 'date',
             'end_date' => 'date',
+            'delivery_model' => \App\Enums\DeliveryModel::class,
         ];
     }
 
@@ -65,5 +66,10 @@ class CarePackage extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    public function hasDpAccountModel(): bool
+    {
+        return $this->delivery_model?->hasDpAccount() ?? false;
     }
 }
