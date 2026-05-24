@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'tenant_id', 'user_id',
@@ -57,6 +58,29 @@ class Profile extends Model
     public function carer(): HasOne
     {
         return $this->hasOne(Carer::class);
+    }
+
+    // Relationships where THIS profile is the contact/relative of a service user
+    // (they're someone's emergency contact, delegate, next of kin…).
+    public function relationshipsAsContact(): HasMany
+    {
+        return $this->hasMany(PersonRelationship::class, 'related_profile_id');
+    }
+
+    // Convenience "hat" checks for the multi-hat view page and table icons.
+    public function getHasLoginAttribute(): bool
+    {
+        return $this->user_id !== null;
+    }
+
+    public function getIsCarerAttribute(): bool
+    {
+        return $this->carer()->exists();
+    }
+
+    public function getIsServiceUserAttribute(): bool
+    {
+        return $this->serviceUser()->exists();
     }
 
 }

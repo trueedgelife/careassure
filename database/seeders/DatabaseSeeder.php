@@ -367,6 +367,25 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // A payroll-service expense — the observer auto-posts a matching debit
+        Expense::firstOrCreate(
+            [
+                'care_package_id' => $carePackage->id,
+                'category' => ExpenseCategory::PayrollService->value,
+                'expense_date' => '2024-09-15',
+            ],
+            [
+                'tenant_id' => $demoTenant->id,
+                'amount' => 45.00,
+                'supplier_name' => 'PayPacket Ltd',
+                'notes' => 'Monthly payroll administration.',
+                'created_by' => $admin->id,
+            ]
+        );
+
+        // The five demo councils with uneven data (runs last — needs roles + tenants already seeded).
+        $this->call(DemoDataSeeder::class);
+
     }
 
 }

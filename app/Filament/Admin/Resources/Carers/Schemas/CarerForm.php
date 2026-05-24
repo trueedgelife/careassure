@@ -23,9 +23,19 @@ class CarerForm
                         modifyQueryUsing: fn ($query) => $query->whereDoesntHave('carer'),
                     )
                     ->getOptionLabelFromRecordUsing(fn (Profile $record) => $record->full_name)
-                    ->searchable(['first_name', 'last_name'])
+                    ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->createOptionForm([
+                        \Filament\Forms\Components\TextInput::make('first_name')
+                            ->required(),
+                        \Filament\Forms\Components\TextInput::make('last_name')
+                            ->required(),
+                        \Filament\Forms\Components\TextInput::make('phone')
+                            ->tel(),
+                        \Filament\Forms\Components\DatePicker::make('dob')
+                            ->label('Date of birth'),
+                    ]),
                 Select::make('employment_type')
                     ->options(EmploymentType::class)
                     ->default(EmploymentType::Employee)

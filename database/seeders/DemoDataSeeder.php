@@ -85,6 +85,8 @@ class DemoDataSeeder extends Seeder
             $this->seedCouncil($i + 1, $bp);
         }
 
+        $this->seedMultiHatPerson();
+
         $this->command?->info('DemoDataSeeder complete. Logins: {role}{n}@{slug}.example.com / password');
     }
 
@@ -130,6 +132,82 @@ class DemoDataSeeder extends Seeder
         // ---- Service users + their domain data ----
         for ($n = 1; $n <= $bp['service_users']; $n++) {
             $this->makeServiceUser($tenant, $slug, $n, $bp['profile'], $carers, $index);
+        }
+    }
+
+    /**
+     * Creates one deliberate "multi-hat" person to prove the data model:
+     * the same Profile is a carer, a service user, has a login with TWO
+     * roles, and is the emergency-contact delegate for another service user.
+     *
+     * Lives in Bartolettitown. Login: multihat@bartolettitown.example.com
+     */
+    protected function seedMultiHatPerson(): void
+    {
+        $tenant = Tenant::where('slug', 'bartolettitown')->first();
+        if (! $tenant) {
+            return;
+        }
+
+        $this->permissions->setPermissionsTeamId($tenant->id);
+
+        // The person + their login.
+        $user = $this->makeUser($tenant->id, "multihat@bartolettitown.example.com", 'Eleri Probert', false);
+        $profile = Profile::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'first_name' => 'Eleri',
+            'last_name' => 'Probert',
+            'phone' => fake()->phoneNumber(),
+            'dob' => '1979-04-12',
+            'city' => fake()->city(),
+            'postcode' => fake()->postcode(),
+        ]);
+
+        // Hat 1 + 2: a login with BOTH carer and service_user roles.
+        $user->syncRoles(['carer', 'service_user']);
+
+        // Hat 3: she is a carer (employment record + a rate).
+        $carer = Carer::create([
+            'tenant_id' => $tenant->id,
+            'profile_id' => $profile->id,
+            'employment_type' => EmploymentType::Employee,
+            'start_date' => '2023-06-01',
+            'is_primary_carer' => false,
+            'is_active' => true,
+        ]);
+        CarerRate::create([
+            'tenant_id' => $tenant->id,
+            'carer_id' => $carer->id,
+            'rate_type' => CarerRateType::Day,
+            'hourly_rate' => 14.00,
+            'effective_from' => '2024-01-01',
+        ]);
+
+        // Hat 4: she is ALSO a service user in her own right.
+        $ownServiceUser = ServiceUser::create([
+            'tenant_id' => $tenant->id,
+            'profile_id' => $profile->id,
+            'council_reference' => 'BAR-MH01',
+            'status' => ServiceUserStatus::Active,
+            'is_active' => true,
+        ]);
+
+        // Hat 5: she is the emergency-contact delegate for a DIFFERENT service
+        // user (the first one seeded in Bartolettitown), via a relationship.
+        $otherServiceUser = ServiceUser::where('tenant_id', $tenant->id)
+            ->where('id', '!=', $ownServiceUser->id)
+            ->first();
+
+        if ($otherServiceUser) {
+            PersonRelationship::create([
+                'tenant_id' => $tenant->id,
+                'service_user_id' => $otherServiceUser->id,
+                'related_profile_id' => $profile->id,
+                'relationship_type' => RelationshipType::NextOfKin,
+                'is_emergency_contact' => true,
+                'has_lpa' => false,
+            ]);
         }
     }
 
