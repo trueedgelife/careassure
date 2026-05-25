@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Support\ActingContext;
 use App\Support\TenantContext;
 use Illuminate\Support\ServiceProvider;
+use Filament\Tables\Columns\TextColumn;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +17,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        TextColumn::configureUsing(fn (TextColumn $column) => $column->timezone('Europe/London'));
     }
 }
