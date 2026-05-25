@@ -37,9 +37,7 @@ class CouncilPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Council/Widgets'), for: 'App\Filament\Council\Widgets')
-            ->widgets([
-                AccountWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
